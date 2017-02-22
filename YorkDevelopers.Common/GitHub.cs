@@ -14,13 +14,18 @@ namespace YorkDevelopers.Shared
         private readonly GitHubClient gitHubClient;
         public GitHub()
         {
+            // Set up our credentials to access git hub
             this.gitHubClient = new GitHubClient(new ProductHeaderValue("yorkDevelopersFeed"));
             this.gitHubClient.Credentials = new Credentials(Settings.Default.GITHUB_TOKEN);
         }
 
+        /// <summary>
+        /// Creates/Updates the specified file on GitHub
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="contents"></param>
         public void WriteFileToGitHub(string filename, string contents)
         {
-
             try
             {
                 // try to get the file (and with the file the last commit sha)
@@ -54,6 +59,13 @@ namespace YorkDevelopers.Shared
 
             }
         }
+
+        /// <summary>
+        /// Reads the contents of an existing file on github.  Returns "" if the file 
+        /// does not currently exist.
+        /// </summary>
+        /// <param name="filename">For example _data/Events.yml</param>
+        /// <returns></returns>
         public string ReadFileFromGitHub(string filename)
         {
             try

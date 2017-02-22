@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 using YorkDevelopers.Shared;
 
@@ -14,14 +12,35 @@ namespace YorkDevelopers.YPS
         //Speed,  filtering additional pages
         static void Main(string[] args)
         {
-            const string URL = "http://www.ypsyork.org/events/?pno=1";
-
+            const string URL = "http://www.ypsyork.org/events/?pno=";
             var client = new WebClient();
-            var html = client.DownloadString(URL);
+            client.Proxy = GlobalProxySelection.GetEmptyWebProxy();
+
+            List<Common> allEvents = new List<Common>();
+            var pageNumber = 1;
+            while (true)
+            {
+                if (!ReadPage(client, URL, allEvents, pageNumber)) break;
+                pageNumber++;
+            }
+
+            var serializer = new Serializer();
+            var yaml = serializer.Serialize(allEvents);
+
+            // Push the file to git
+            var gitHubClient = new GitHub();
+            gitHubClient.WriteFileToGitHub("_data/YPS.yml", yaml);
+        }
+
+        private static bool ReadPage(WebClient client, string URL, List<Common> allEvents, int pageNumber)
+        {
+            var added = false;
+            Console.WriteLine("Looking for page "  + pageNumber);
+            //var html = client.DownloadString(URL + pageNumber);
+            var html = readpage(URL + pageNumber);
 
             var document = new Document(html);
 
-            var allEvents = new List<YorkDevelopers.Shared.Common>();
             var article = document.GetNextTag(@"<div class=""article"">");
             while (article != null)
             {
@@ -55,8 +74,12 @@ namespace YorkDevelopers.YPS
                     common.Ends = common.Starts.AddHours(2);
                 }
                 var venueLabelTag = document.GetNextTagOfType("dt", startTimeTag);
-                var venueTag = document.GetNextTagOfType("dd", venueLabelTag);
-                common.Venue = venueTag.Contents;
+                var venueTag = startTimeTag;
+                if (venueLabelTag != null)
+                {
+                    venueTag = document.GetNextTagOfType("dd", venueLabelTag);
+                    common.Venue = venueTag.Contents;
+                }
 
                 var logo = document.GetNextTagOfType("img", venueTag);
                 common.Logo = document.GetAttribute(logo, "src");
@@ -66,25 +89,34 @@ namespace YorkDevelopers.YPS
 
 
                 article = document.GetNextTag(@"<div class=""article"">", article);
+                added = true;
             }
 
-
-            var serializer = new Serializer();
-            var yaml = serializer.Serialize(allEvents);
-
-            // Push the file to git
-            var gitHubClient = new GitHub();
-            gitHubClient.WriteFileToGitHub("_data/YPS.yml", yaml);
+            return added;
         }
 
         private static string GetDescription(string URL, WebClient client)
         {
-            var html = client.DownloadString(URL);
+            // var html = client.DownloadString(URL);
+            var html = readpage(URL);
 
             var document = new Document(html);
             var heading = document.GetNextTag(@"<h3 class=""article-title"">");
             var description = document.GetNextTagOfType("p", heading);
             return description.Contents;
+        }
+
+        private static string readpage(string Url)
+        {
+            HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create(Url);
+            myRequest.Method = "GET";
+            WebResponse myResponse = myRequest.GetResponse();
+            var sr = new StreamReader(myResponse.GetResponseStream(), System.Text.Encoding.UTF8);
+            string result = sr.ReadToEnd();
+            sr.Close();
+            myResponse.Close();
+
+            return result;
         }
     }
 }

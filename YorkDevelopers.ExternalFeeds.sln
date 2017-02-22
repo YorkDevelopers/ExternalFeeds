@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YorkDevelopers.MergeFeeds",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YorkDevelopers.Shared", "YorkDevelopers.Common\YorkDevelopers.Shared.csproj", "{2105403D-3FDF-452F-9130-74E99616FA29}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YorkDevelopers.YPS", "YorkDevelopers.YPS\YorkDevelopers.YPS.csproj", "{8FA5F922-FBBB-406F-92F5-2573B9DAEE79}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{2105403D-3FDF-452F-9130-74E99616FA29}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2105403D-3FDF-452F-9130-74E99616FA29}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2105403D-3FDF-452F-9130-74E99616FA29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FA5F922-FBBB-406F-92F5-2573B9DAEE79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FA5F922-FBBB-406F-92F5-2573B9DAEE79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FA5F922-FBBB-406F-92F5-2573B9DAEE79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FA5F922-FBBB-406F-92F5-2573B9DAEE79}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
