@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using YamlDotNet.Serialization;
 using YorkDevelopers.Shared;
+using System.Linq;
 
 namespace YorkDevelopers.MergeFeeds
 {
@@ -24,7 +25,7 @@ namespace YorkDevelopers.MergeFeeds
             }
 
             var serializer = new Serializer();
-            var yamlAll = serializer.Serialize(allEvents);
+            var yamlAll = serializer.Serialize(allEvents.Where(evt => evt.Starts > System.DateTime.Now));
 
             gitHub.WriteFileToGitHub(TARGETFILENAME, yamlAll);
 
