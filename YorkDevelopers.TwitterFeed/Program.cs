@@ -180,7 +180,7 @@ namespace YorkDevelopers.TwitterFeed
             if (months.IndexOf(detectedMonth) < created_at.Month)
                 year++;
 
-            return new DateTime(year, months.IndexOf(detectedMonth), bestDay);
+            return new DateTime(year, months.IndexOf(detectedMonth)+1, bestDay);
         }
 
         private static bool IsAnEvent(tweet tweet)
