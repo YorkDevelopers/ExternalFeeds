@@ -45,7 +45,7 @@ namespace YorkDevelopers.TwitterFeed
                     evt.Description = tweet.text;
 
                 // We don't really have the name of the event,  so just use the name of the
-                // person who tweet it.
+                // person who tweeted it.
                 if (!string.IsNullOrWhiteSpace(tweet.quoted_status?.user?.name))
                     evt.Name = tweet.quoted_status.user.name;
                 else
@@ -75,8 +75,12 @@ namespace YorkDevelopers.TwitterFeed
                     evt.Starts = FindDateInText(tweet.text, ParseDate(tweet.created_at));
                 }
 
+
+                // Assume all day
+                evt.Ends = evt.Starts;
+
                 // We don't have the following fields available:
-                //evt.Venue, evt.IsFree, evt.Ends
+                //evt.Venue, evt.IsFree
                 allEvents.Add(evt);
 
             }
@@ -105,7 +109,8 @@ namespace YorkDevelopers.TwitterFeed
         {
             // First try and find a month in the text.
             var months = new List<string>() { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
-
+            var days = new List<string>() { "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "13th", "14th", "15th",
+                                            "16th","17th","18th","19th","20th","21st","22nd","23rd","24th","25th","26th","27th","28th","29th","30th","31st"};
             // First try and find the full month
             var startOfMonth = -1;
             var detectedMonth = "";
@@ -135,12 +140,47 @@ namespace YorkDevelopers.TwitterFeed
 
             if (startOfMonth == -1) return DateTime.MinValue; //No luck :-(
 
-            // Try and find the day.  Walk backwards and forwards looking for either a 2 digit number,  or 2 digit number with th,st,rd,nd
+
+            // Find the day in the string which occurs closest to the month
+            var bestDay = 0;
+            var bestDayDifference = int.MaxValue;
+            var daysReversed = days.Reverse<string>();
+            foreach (var day in daysReversed)
+            {
+                if (text.ToLower().Contains(day.ToLower()))
+                {
+                    var startOfDay = text.ToLower().IndexOf(day.ToLower());
+                    if (startOfDay < startOfMonth)
+                    {
+                        var difference = startOfMonth - (startOfDay + day.Length);
+                        if (difference < bestDayDifference)
+                        {
+                            bestDayDifference = difference;
+                            bestDay = days.IndexOf(day) + 1;
+                        }
+                    }
+
+                    if (startOfDay > startOfMonth)
+                    {
+                        var difference = startOfDay - (startOfMonth + detectedMonth.Length);
+                        if (difference < bestDayDifference)
+                        {
+                            bestDayDifference = difference;
+                            bestDay = days.IndexOf(day) + 1;
+                        }
+                    }
+                }
+            }
+            if (bestDay == 0) return DateTime.MinValue;
+
 
             // Assume it's this year,  unless the month occurs before the tweet was made.  E.g. the tweet was made in June and the month is March then
             // the event must take place next year.
+            var year = DateTime.Now.Year;
+            if (months.IndexOf(detectedMonth) < created_at.Month)
+                year++;
 
-            return new DateTime(DateTime.Now.Year, months.IndexOf(detectedMonth), 1);
+            return new DateTime(year, months.IndexOf(detectedMonth), bestDay);
         }
 
         private static bool IsAnEvent(tweet tweet)
